@@ -1,0 +1,318 @@
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from initialization import initialize
+from selenium.webdriver.common.by import By
+from initialization import random
+from random import randint
+from initialization import actions
+from bs4 import BeautifulSoup
+from random import uniform
+import csv
+import time
+
+
+def mongoem(name, href, handle, image, infos):
+
+    data = {}
+    data['hash'] = hash(handle+image)
+    data['name'] = name
+    data['handle'] = handle
+    data['url'] = href
+    data['image'] = image
+    data['info'] = infos
+
+    f.write(href+'\n')
+
+
+def login(driver):
+
+    username = 'alexander.theengineer@gmail.com'
+    password = 'ivassiaseagapaei12345'
+    r = random()
+    time.sleep(r.rand_p())
+
+    elmnt = driver.find_element_by_xpath('//*[@id="email"]')  # Finds the username
+    elmnt1 = driver.find_element_by_xpath('//*[@id="pass"]')  # Finds the password
+
+    for char1 in username:
+        elmnt.send_keys(char1)
+        t = (r.rand_p() % 10)/10
+        t1 = uniform(0.1, t)
+        time.sleep(t1)  # pause for 0.X seconds
+
+    for char2 in password:
+        elmnt1.send_keys(char2)
+        t = (r.rand_p() % 10) / 10
+        t1 = uniform(0.1, t)
+        time.sleep(t1)  # pause for 0.X seconds
+
+    z = r.rand_p()
+    z = z % 10
+    print(z)
+    time.sleep(z)
+
+    while True:
+        try:
+            driver.find_element_by_id('loginbutton').click() # clicks the login button
+            print('Succesfully Logged in')
+            break
+        except:
+            pass
+
+
+def visit(driver):
+
+    r = random()
+    print('Visit page')
+    driver.get("https://facebook.com")
+    z = r.rand_p()
+    z1 = r.rand_p()
+    if z > 10:
+        z = z % 10
+        z = z//2
+    print('will stay for ', z)
+    for i in range(0, z):
+        time.sleep(z1)
+        print('this is the ', i)
+        print('time staying is ', z1)
+        action.scroll_down(driver)
+
+
+def scrape_names(driver):
+
+    html = driver.page_source
+    soup = BeautifulSoup(html, 'html.parser')
+
+    g = open("111.html", "wb")
+    g.write(soup.encode('utf-8'))
+    g.close()
+
+    soup = BeautifulSoup(
+        open("111.html", encoding="utf8"),
+        "html.parser")
+
+    cntr = 1
+    while cntr <= 10:
+
+        try:
+            friend_list = soup.find('div', {'class': '_5h60 _30f'})
+            break
+        except:
+            pass
+        cntr += 1
+
+    print('going into mongo')
+    try:
+        friend_list = friend_list.select("ul[class*=uiList]")
+        for friends_li in friend_list:
+            try:
+                friends_li = friends_li.find_all('li', {'class': '_698'})
+                for friend in friends_li:
+                    href = None
+                    name = None
+                    image = None
+                    infos = None
+
+                    try:
+                        image = friend.find('a', {'class': '_5q6s _8o _8t lfloat _ohe'})
+                        image = image.find('img').get('src')
+                    except:
+                        image = None
+                        pass
+
+                    try:
+                        infos1 = friend.find('div', {'class': 'clearfix _42ef'})
+                        infos = infos1.find('ul', {'class': 'uiList _4kg'}).text
+                    except:
+                        infos = None
+                        pass
+
+                    try:
+                        friend = friend.find('div', {'class': 'fsl fwb fcb'})
+
+                        try:
+                            href = friend.find('a').get('href')
+                        except:
+                            href = None
+                            pass
+
+                        try:
+                            name = friend.find('a').text
+                        except:
+                            name = None
+                            pass
+
+                        href = href.replace('?fref=pb&hc_location=friends_tab', '')
+                        href = href.replace('&fref=pb&hc_location=friends_tab', '')
+                        handle = href.replace('https://www.facebook.com/', '')
+
+
+
+                        #  After finding the names and the urls with Beautifulsoup I write them to a json and to a csv
+                        mongoem(name, href, handle, image, infos)
+
+
+
+                    except:
+                        pass
+
+            except:
+                pass
+    except:
+        pass
+
+    print('inserted into mongo succesfully')
+
+
+def findfriends(driver):
+
+    r = random()
+    time.sleep(r.rand_p())
+    visible = 0
+
+    html = driver.page_source
+    soup = BeautifulSoup(html, 'html.parser')
+
+    print('in friend')
+
+    z = open("1_1.html", "wb")
+    z.write(soup.encode('utf-8'))
+    z.close()
+
+    soup = BeautifulSoup(
+        open("1_1.html", encoding="utf8"),
+        "html.parser")
+
+    cntr = 1
+    while cntr <= 10:
+
+        try:
+            friend_list = soup.find('div', {'class': '_5h60 _30f'})
+            break
+        except:
+            pass
+        cntr += 1
+
+    try:
+        friend_list = friend_list.select("ul[class*=uiList]")
+        for friends_li in friend_list:
+            if visible == 2:
+                print('its going to break')
+                break
+            else:
+                try:
+                    friends_li = friends_li.find_all('li', {'class': '_698'})
+                    for friend in friends_li:
+                        href = None
+                        name = None
+                        image = None
+                        infos = None
+
+                        try:
+                            image = friend.find('a', {'class': '_5q6s _8o _8t lfloat _ohe'})
+                            image = image.find('img').get('src')
+                            visible = 2
+                            print('finally found out that it needs to break')
+                            break
+                        except:
+                            break
+                            pass
+                except:
+                    break
+                    pass
+    except:
+        pass
+
+    if visible == 2:
+
+        counter_scroll = 1
+        while True:
+            action.scroll_end(driver)
+            wb_wait = r.rand_p() % 10
+
+            if counter_scroll % 10 == 0:
+                print('scroll')
+
+            if counter_scroll >= 3500:
+                break
+
+            while True:
+
+                if wb_wait > 7:
+                    wb_wait = wb_wait / 2
+                else:
+                    break
+
+            try:
+                WebDriverWait(driver, wb_wait).until(
+                    EC.visibility_of_element_located((By.XPATH, '//*[@id="timeline-medley"]/div/div[2]/div[1]/div/div/h3')))
+                try:
+                    driver.find_element_by_xpath('//*[@id="timeline-medley"]/div/div[2]/div[1]/div')
+                    break
+                except:
+                    pass
+            except:
+                pass
+            counter_scroll += 1
+
+        scrape_names(driver)
+
+
+def current_user(friend):
+    c_user = open('c_user.txt', 'a', encoding='utf8')
+    c_user.write(friend+'\n\n\n')
+    c_user.close()
+
+
+def al_crawled(friend):
+    c_user = open('crawled.txt', 'a', encoding='utf8')
+    c_user.write(friend+'\n')
+    c_user.close()
+
+
+def spider(driver):
+    r = random()
+    friend_list = []
+
+    with open('list_m.txt', 'r', encoding="utf8") as userfile:
+        csvreader = csv.reader(userfile)
+
+        for line in csvreader:
+            friend_list.append(str(line[0]))
+    print('the actual unique list length is ', len(friend_list))
+    userfile.close()
+
+    profiles_crawled = 1
+
+    max_profiles = randint(400, 450)
+
+    for friend in friend_list:
+        current_user(friend)
+        al_crawled(friend)
+        print('\n\n\n')
+        print('==================')
+        print(friend)
+        time.sleep(r.rand_p())
+        if profiles_crawled > 1:
+            visit(driver)
+        time.sleep(r.rand_p())
+        friend_url = friend+'/friends'
+        driver.get(friend_url)
+        findfriends(driver)
+        profiles_crawled += 1
+
+        if profiles_crawled >= max_profiles:
+            break
+
+
+if __name__ == '__main__':
+    dr = initialize()
+    action = actions()
+
+    f = open('crawl_list_boston', 'a', encoding='utf8')
+
+    dr.get('https://facebook.com')
+    login(dr)
+    spider(dr)
+    dr.close()
+    f.close()
